@@ -1,5 +1,12 @@
 abstract type AbstractVectorSet end
 
+# Used in `@variable model x[1:n] in s`
+function build_constrained_variables(
+    _error::Function, x::AbstractVector, s::AbstractVectorSet)
+    return build_constrained_variables(_error, x, moi_set(s, length(x)))
+end
+
+
 # Used in `@constraint model f in s`
 function build_constraint(_error::Function, f::AbstractVector,
                          s::AbstractVectorSet)

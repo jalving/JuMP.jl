@@ -1430,8 +1430,6 @@ macro variable(args...)
             condition == :() ||
                 _error("Cannot have conditional indexing for PSD variables")
             length(idxvars) == length(idxsets) == 2 ||
-                _error("PSD variables must be 2-dimensional")
-            !symmetric || (length(idxvars) == length(idxsets) == 2) ||
                 _error("Symmetric variables must be 2-dimensional")
             Containers.has_dependent_sets(idxvars, idxsets) &&
                 _error("Cannot have index dependencies in symmetric variables")
