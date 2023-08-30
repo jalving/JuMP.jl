@@ -92,6 +92,11 @@ function _finalize_macro(model, code, source::LineNumberNode)
     )
 end
 
+function register_in_model(model::AbstractModel, name::Symbol, variable)
+    _error_if_cannot_register(model, name)
+    model[name] = variable
+end
+
 function _error_if_cannot_register(model::AbstractModel, name::Symbol)
     obj_dict = object_dictionary(model)
     if haskey(obj_dict, name)
@@ -125,24 +130,55 @@ function _macro_assign_and_return(
     model_for_registering = nothing,
 )
     return quote
-        $(
-            if model_for_registering !== nothing
-                :(_error_if_cannot_register(
-                    $model_for_registering,
-                    $(quot(name)),
-                ))
-            end
-        )
+        # NOTE: tests fail if we do this way
+        # $(
+        #     if model_for_registering !== nothing
+        #         :(_error_if_cannot_register(
+        #             $model_for_registering,
+        #             $(quot(name)),
+        #         ))
+        #     end
+        # )
         $variable = $code
         $(
             if model_for_registering !== nothing
-                :($model_for_registering[$(quot(name))] = $variable)
+                :(register_in_model(
+                    $model_for_registering, 
+                    $(quot(name)), 
+                    $variable
+                ))
             end
         )
         # This assignment should be in the scope calling the macro
         $(esc(name)) = $variable
     end
 end
+
+# function _macro_assign_and_return(
+#     code,
+#     variable,
+#     name;
+#     model_for_registering = nothing,
+# )
+#     return quote
+#         $(
+#             if model_for_registering !== nothing
+#                 :(_error_if_cannot_register(
+#                     $model_for_registering,
+#                     $(quot(name)),
+#                 ))
+#             end
+#         )
+#         $variable = $code
+#         $(
+#             if model_for_registering !== nothing
+#                 :($model_for_registering[$(quot(name))] = $variable)
+#             end
+#         )
+#         # This assignment should be in the scope calling the macro
+#         $(esc(name)) = $variable
+#     end
+# end
 
 function _check_vectorized(sense::Symbol)
     sense_str = string(sense)
